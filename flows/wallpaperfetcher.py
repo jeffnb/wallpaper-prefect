@@ -233,10 +233,11 @@ with Flow("Reddit wallpaper fetcher", executor=LocalDaskExecutor(), schedule=sch
 flow.storage = GitHub(
     repo="jeffnb/wallpaper-prefect",                 # name of repo
     path="flows/wallpaperfetcher.py",        # location of flow file in repo
-    secrets=["GITHUB_ACCESS_TOKEN"]  # name of personal access token secret
+    secrets=["GITHUB_ACCESS_TOKEN"],  # name of personal access token secret
+    ref="main"
 )
 
-flow.register("Testing")
+flow.register("Testing", labels=["testing"])
 # flow.visualize()
 # start = time.time()
 # state = flow.run()
