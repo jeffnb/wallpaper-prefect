@@ -11,6 +11,7 @@ from PIL import Image
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientError
 from prefect import task, Flow, Parameter
+from prefect.client import Secret
 from prefect.executors import LocalDaskExecutor
 from prefect.schedules import IntervalSchedule
 from prefect.storage import GitHub
@@ -105,9 +106,9 @@ def get_submissions(subreddit, how_many=50):
     Pull the hot wallpaper entries from reddit
     """
     reddit = praw.Reddit(
-        client_id=prefect.context.secrets['reddit_client_id'],
-        client_secret=prefect.context.secrets['reddit_client_secret'],
-        user_agent=prefect.context.secrets["reddit_user_agent"]
+        client_id=Secret('reddit_client_id').get(),
+        client_secret=Secret('reddit_client_secret').get(),
+        user_agent=Secret("reddit_user_agent").get()
     )
     subreddit = reddit.subreddit(subreddit)
 
@@ -126,7 +127,10 @@ def pull_keys(bucket):
     """
     Pulls all keys in the wallpapers bucket
     """
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource('s3',
+                        AWS_ACCESS_KEY_ID = Secret('aws_access_key_id').get(),
+                        AWS_SECRET_ACCESS_KEY = Secret('aws_secret_access_key').get()
+                        )
     bucket = s3.Bucket(bucket)
     return [key.key for key in bucket.objects.all()]
 
@@ -198,7 +202,9 @@ def send_to_s3_and_remove(bucket, folder, name):
     """
     Take the downloaded file and push up to s3 in the images directory then remove local copy
     """
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource('s3',
+                        AWS_ACCESS_KEY_ID=Secret('aws_access_key_id').get(),
+                        AWS_SECRET_ACCESS_KEY=Secret('aws_secret_access_key').get())
     s3.Object(bucket, f"{folder}/{name}").put(Body=open(name, 'rb'))
 
     os.remove(name)
@@ -208,7 +214,9 @@ def store_submissions(bucket, submission):
     """
     Used to store the submission in a bucket for checking
     """
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource('s3',
+                        AWS_ACCESS_KEY_ID=Secret('aws_access_key_id').get(),
+                        AWS_SECRET_ACCESS_KEY=Secret('aws_secret_access_key').get())
     s3.Object(bucket, submission.name).put(Body=str(submission))
 
 
