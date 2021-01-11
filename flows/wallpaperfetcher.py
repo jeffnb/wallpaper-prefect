@@ -127,10 +127,9 @@ def pull_keys(bucket):
     """
     Pulls all keys in the wallpapers bucket
     """
-    s3 = boto3.resource('s3',
-                        AWS_ACCESS_KEY_ID = Secret('aws_access_key_id').get(),
-                        AWS_SECRET_ACCESS_KEY = Secret('aws_secret_access_key').get()
-                        )
+    session = boto3.Session(aws_access_key_id=Secret('aws_access_key_id').get(),
+                            aws_secret_access_key=Secret('aws_secret_access_key').get())
+    s3 = session.resource('s3')
     bucket = s3.Bucket(bucket)
     return [key.key for key in bucket.objects.all()]
 
@@ -202,9 +201,9 @@ def send_to_s3_and_remove(bucket, folder, name):
     """
     Take the downloaded file and push up to s3 in the images directory then remove local copy
     """
-    s3 = boto3.resource('s3',
-                        AWS_ACCESS_KEY_ID=Secret('aws_access_key_id').get(),
-                        AWS_SECRET_ACCESS_KEY=Secret('aws_secret_access_key').get())
+    session = boto3.Session(aws_access_key_id=Secret('aws_access_key_id').get(),
+                            aws_secret_access_key=Secret('aws_secret_access_key').get())
+    s3 = session.resource('s3')
     s3.Object(bucket, f"{folder}/{name}").put(Body=open(name, 'rb'))
 
     os.remove(name)
@@ -214,9 +213,9 @@ def store_submissions(bucket, submission):
     """
     Used to store the submission in a bucket for checking
     """
-    s3 = boto3.resource('s3',
-                        AWS_ACCESS_KEY_ID=Secret('aws_access_key_id').get(),
-                        AWS_SECRET_ACCESS_KEY=Secret('aws_secret_access_key').get())
+    session = boto3.Session(aws_access_key_id=Secret('aws_access_key_id').get(),
+                            aws_secret_access_key=Secret('aws_secret_access_key').get())
+    s3 = session.resource('s3')
     s3.Object(bucket, submission.name).put(Body=str(submission))
 
 
@@ -245,7 +244,7 @@ flow.storage = GitHub(
     ref="main"
 )
 
-flow.register("Testing", labels=["testing"])
+#flow.register("Testing", labels=["testing"])
 # flow.visualize()
 # start = time.time()
 # state = flow.run()
