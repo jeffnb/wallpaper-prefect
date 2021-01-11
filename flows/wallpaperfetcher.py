@@ -201,12 +201,16 @@ def send_to_s3_and_remove(bucket, folder, name):
     """
     Take the downloaded file and push up to s3 in the images directory then remove local copy
     """
+    logger = prefect.context.get("logger")
     session = boto3.Session(aws_access_key_id=Secret('aws_access_key_id').get(),
                             aws_secret_access_key=Secret('aws_secret_access_key').get())
     s3 = session.resource('s3')
-    s3.Object(bucket, f"{folder}/{name}").put(Body=open(name, 'rb'))
 
-    os.remove(name)
+    try:
+        s3.Object(bucket, f"{folder}/{name}").put(Body=open(name, 'rb'))
+        os.remove(name)
+    except FileNotFoundError as e:
+        logger.error("File missing {name}")
 
 @task
 def store_submissions(bucket, submission):
