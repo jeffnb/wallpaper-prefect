@@ -155,7 +155,7 @@ def get_file_data(submission):
     elif ImgurWrapper.is_imgur(url):
         # Now create the imgur client
         logger.info("Found imgur url")
-        imgur_wrapper = ImgurWrapper(prefect.context.secrets['imgur_client_id'], prefect.context.secrets['imgur_client_secret'])
+        imgur_wrapper = ImgurWrapper(Secret('imgur_client_id').get(), Secret('imgur_client_secret'))
 
         # Gets the image url or a series of them from a gallery on imgur
         images = imgur_wrapper.get_image_list(url)
