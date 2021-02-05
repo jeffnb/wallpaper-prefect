@@ -1,0 +1,15 @@
+[default]
+user = "foo"
+password = "bar"
+    [default.foo]
+    hello="goodbye"
+    near="far"
+
+[development]
+user = "dev"
+password = "dev_password"
+
+[production]
+user = "prod"
+password = "prod_password"
+
